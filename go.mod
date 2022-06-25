@@ -1,4 +1,4 @@
-module github.com/Blockdaemon/sealevel-go
+module github.com/terorie/sealevel-go
 
 go 1.18
 
