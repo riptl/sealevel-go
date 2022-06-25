@@ -23,7 +23,13 @@ func NewConfig(opts *ConfigOpts) Config {
 	})
 	if opts != nil {
 		C.sealevel_config_setopt(config, C.SEALEVEL_OPT_NO_VERIFY, bool2size(opts.NoVerify))
+		if opts.MaxCallDepth == 0 {
+			opts.MaxCallDepth = 20
+		}
 		C.sealevel_config_setopt(config, C.SEALEVEL_OPT_MAX_CALL_DEPTH, C.size_t(opts.MaxCallDepth))
+		if opts.StackFrameSize == 0 {
+			opts.StackFrameSize = 4096
+		}
 		C.sealevel_config_setopt(config, C.SEALEVEL_OPT_STACK_FRAME_SIZE, C.size_t(opts.StackFrameSize))
 		C.sealevel_config_setopt(config, C.SEALEVEL_OPT_ENABLE_STACK_FRAME_GAPS, bool2size(opts.EnableStackFrameGaps))
 		C.sealevel_config_setopt(config, C.SEALEVEL_OPT_INSTRUCTION_METER_CHECKPOINT_DISTANCE, C.size_t(opts.InsnMeterCheckpointDist))
@@ -128,10 +134,16 @@ type Executable struct {
 
 // LoadProgram wraps `sealevel_load_program`.
 func LoadProgram(config Config, syscalls *SyscallRegistry, elf []byte) (*Executable, error) {
+	var elfPtr *C.char
+	if len(elf) > 0 {
+		// only borrowed, no copy needed … i think?
+		elfPtr = (*C.char)(unsafe.Pointer(&elf[0]))
+	}
+
 	program := C.sealevel_load_program(
 		config,
 		syscalls.inner,
-		(*C.char)(unsafe.Pointer(&elf[0])), // only borrowed, no copy needed … i think?
+		elfPtr,
 		(C.size_t)(len(elf)),
 	)
 	if program == nil {
@@ -207,13 +219,17 @@ func NewVM(exec *Executable, heap []byte, regions []Region) (*VM, error) {
 		cRegions[i] = region.ffi()
 		vm.dataPtrs[i] = cRegions[i].data_addr
 	}
+	var cRegionsPtr *C.sealevel_region
+	if len(cRegions) > 0 {
+		cRegionsPtr = &cRegions[0]
+	}
 
 	exec.used = true
 	vm.vm = C.sealevel_vm_create(
 		exec.program,
 		(*C.uint8_t)(vm.heap),
 		C.size_t(len(heap)),
-		&cRegions[0],
+		cRegionsPtr,
 		C.int(len(cRegions)),
 	)
 	if vm.vm == nil {

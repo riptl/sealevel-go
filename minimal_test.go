@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"encoding/binary"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,9 +15,9 @@ import (
 var minimalELF []byte
 
 func TestExecute_Simple(t *testing.T) {
-	config := NewConfig(&ConfigOpts{
-		EnableInsnMeter: true,
-	})
+	opts := NewConfigOpts()
+	opts.EnableInsnMeter = true
+	config := NewConfig(opts)
 	syscalls := NewSyscallRegistry()
 
 	// Load addition program
@@ -42,6 +43,21 @@ func TestExecute_Simple(t *testing.T) {
 	require.NoError(t, err, "execution failed")
 
 	assert.Equal(t, uint64(4), r0)
+}
+
+func TestError(t *testing.T) {
+	config := NewConfig(nil)
+	syscalls := NewSyscallRegistry()
+
+	const errMsg = "ElfError(FailedToParse(\"read-write: bad offset 0\"))"
+	program, err := LoadProgram(config, syscalls, nil)
+	require.Equal(t, Error{
+		Code:    ErrInvalidElf,
+		Message: errMsg,
+	}, err)
+	require.EqualError(t, err, errMsg)
+	require.Nil(t, program)
+	runtime.GC()
 }
 
 var _ embed.FS // GoLand is being a bitch and optimizing away the embed import

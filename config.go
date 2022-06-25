@@ -1,5 +1,32 @@
 package sealevel
 
+// NewConfigOpts should be used to create a new ConfigOpts object.
+func NewConfigOpts() *ConfigOpts {
+	return &ConfigOpts{
+		NoVerify:                       false,
+		MaxCallDepth:                   20,
+		StackFrameSize:                 4096,
+		EnableStackFrameGaps:           true,
+		InsnMeterCheckpointDist:        10000,
+		EnableInsnMeter:                true,
+		EnableInsnTracing:              false,
+		EnableSymbolAndSectionLabels:   false,
+		DisableUnresolvedSymsAtRuntime: true,
+		RejectBrokenELFs:               false,
+		NoopInsnRate:                   256,
+		SanitizeUserProvidedValues:     true,
+		EncryptEnvRegisters:            true,
+		DisableDeprecatedLoadInsns:     true,
+		SyscallBPFFuncHashColission:    true,
+		RejectCallxR10:                 true,
+		DynamicStackFrames:             true,
+		EnableSdiv:                     true,
+		OptimizeRodata:                 true,
+		StaticSyscalls:                 true,
+		EnableELFVaddr:                 true,
+	}
+}
+
 type ConfigOpts struct {
 	NoVerify bool
 
