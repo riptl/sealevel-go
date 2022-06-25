@@ -204,10 +204,10 @@ func (e *Executable) Compile() {
 // Region maps to struct `sealevel_region`.
 // Internally maps to `solana_rbpf::memory_region::MemoryRegion`.
 type Region struct {
-	Data      []byte
-	VMAddr    uint64
-	VMGapSize uint64
-	Writable  bool
+	Data       []byte
+	VMAddr     uint64
+	VMGapSize  uint64
+	IsWritable bool
 }
 
 func (r Region) ffi() C.sealevel_region {
@@ -216,7 +216,7 @@ func (r Region) ffi() C.sealevel_region {
 		data_size:   C.size_t(len(r.Data)),
 		vm_addr:     C.uint64_t(r.VMAddr),
 		vm_gap_size: C.uint64_t(r.VMGapSize),
-		is_writable: C.bool(r.Writable),
+		is_writable: C.bool(r.IsWritable),
 	}
 }
 
