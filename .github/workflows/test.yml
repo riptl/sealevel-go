@@ -18,6 +18,11 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
+      - name: Install libsealevel
+        run: |
+          sudo mkdir -p /usr/local/lib/x86_64-linux-gnu/
+          sudo cp -v ./dist/libsealevel.so /usr/local/lib/
+          sudo cp -v ./dist/sealevel.h /usr/local/include/
       - name: Test
         run: go test ./... -v
       - name: Check Format
