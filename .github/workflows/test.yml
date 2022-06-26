@@ -34,6 +34,6 @@ jobs:
           echo $LD_LIBRARY_PATH
           ldd ./sealevel-go.test
         env:
-          LD_LIBRARY_PATH: "${GITHUB_WORKSPACE}/dist"
+          LD_LIBRARY_PATH: "${{GITHUB_WORKSPACE}}/dist"
       - name: Check Format
         run: '[ "$(gofmt -l ./ | wc -l)" -eq 0 ]'
