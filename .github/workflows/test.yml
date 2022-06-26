@@ -31,6 +31,7 @@ jobs:
       - name: Test
         run: |
           go test -c .
+          echo $LD_LIBRARY_PATH
           ldd ./sealevel-go.test
         env:
           LD_LIBRARY_PATH: "${GITHUB_WORKSPACE}/dist"
