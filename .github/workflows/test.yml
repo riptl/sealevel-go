@@ -28,8 +28,9 @@ jobs:
           sudo cp -v ./dist/libsealevel.so /usr/local/lib/x86_64-linux-gnu/
           sudo cp -v ./dist/sealevel.h /usr/local/include/
           ldd /usr/local/lib/x86_64-linux-gnu/libsealevel.so
-          echo $LD_LIBRARY_PATH
       - name: Test
         run: go test ./... -v
+        env:
+          LD_LIBRARY_PATH: "${GITHUB_WORKSPACE}/dist"
       - name: Check Format
         run: '[ "$(gofmt -l ./ | wc -l)" -eq 0 ]'
