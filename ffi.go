@@ -86,6 +86,46 @@ func bool2size(b bool) C.size_t {
 	}
 }
 
+type SyscallID int
+
+// Syscall IDs
+const (
+	SyscallID_Invalid                           = SyscallID(C.SEALEVEL_SYSCALL_INVALID)
+	SyscallID_Abort                             = SyscallID(C.SEALEVEL_SYSCALL_ABORT)
+	SyscallID_SolPanic                          = SyscallID(C.SEALEVEL_SYSCALL_SOL_PANIC)
+	SyscallID_SolLog                            = SyscallID(C.SEALEVEL_SYSCALL_SOL_LOG)
+	SyscallID_SolLog64                          = SyscallID(C.SEALEVEL_SYSCALL_SOL_LOG_64)
+	SyscallID_SolLogComputeUnits                = SyscallID(C.SEALEVEL_SYSCALL_SOL_LOG_COMPUTE_UNITS)
+	SyscallID_SolLogPubkey                      = SyscallID(C.SEALEVEL_SYSCALL_SOL_LOG_PUBKEY)
+	SyscallID_SolCreateProgramAddress           = SyscallID(C.SEALEVEL_SYSCALL_SOL_CREATE_PROGRAM_ADDRESS)
+	SyscallID_SolTryFindProgramAddress          = SyscallID(C.SEALEVEL_SYSCALL_SOL_TRY_FIND_PROGRAM_ADDRESS)
+	SyscallID_SolSha256                         = SyscallID(C.SEALEVEL_SYSCALL_SOL_SHA256)
+	SyscallID_SolKeccak256                      = SyscallID(C.SEALEVEL_SYSCALL_SOL_KECCAK256)
+	SyscallID_SolSecp256K1Recover               = SyscallID(C.SEALEVEL_SYSCALL_SOL_SECP256K1_RECOVER)
+	SyscallID_SolBlake3                         = SyscallID(C.SEALEVEL_SYSCALL_SOL_BLAKE3)
+	SyscallID_SolZkTokenElgamalOp               = SyscallID(C.SEALEVEL_SYSCALL_SOL_ZK_TOKEN_ELGAMAL_OP)
+	SyscallID_SolZkTokenElgamalOpWithLoHi       = SyscallID(C.SEALEVEL_SYSCALL_SOL_ZK_TOKEN_ELGAMAL_OP_WITH_LO_HI)
+	SyscallID_SolZkTokenElgamalOpWithScalar     = SyscallID(C.SEALEVEL_SYSCALL_SOL_ZK_TOKEN_ELGAMAL_OP_WITH_SCALAR)
+	SyscallID_SolCurveValidatePoint             = SyscallID(C.SEALEVEL_SYSCALL_SOL_CURVE_VALIDATE_POINT)
+	SyscallID_SolCurveGroupOp                   = SyscallID(C.SEALEVEL_SYSCALL_SOL_CURVE_GROUP_OP)
+	SyscallID_SolGetClockSysvar                 = SyscallID(C.SEALEVEL_SYSCALL_SOL_GET_CLOCK_SYSVAR)
+	SyscallID_SolGetEpochScheduleSysvar         = SyscallID(C.SEALEVEL_SYSCALL_SOL_GET_EPOCH_SCHEDULE_SYSVAR)
+	SyscallID_SolGetFeesSysvar                  = SyscallID(C.SEALEVEL_SYSCALL_SOL_GET_FEES_SYSVAR)
+	SyscallID_SolGetRentSysvar                  = SyscallID(C.SEALEVEL_SYSCALL_SOL_GET_RENT_SYSVAR)
+	SyscallID_SolMemcpy                         = SyscallID(C.SEALEVEL_SYSCALL_SOL_MEMCPY)
+	SyscallID_SolMemmove                        = SyscallID(C.SEALEVEL_SYSCALL_SOL_MEMMOVE)
+	SyscallID_SolMemcmp                         = SyscallID(C.SEALEVEL_SYSCALL_SOL_MEMCMP)
+	SyscallID_SolMemset                         = SyscallID(C.SEALEVEL_SYSCALL_SOL_MEMSET)
+	SyscallID_SolInvokeSignedC                  = SyscallID(C.SEALEVEL_SYSCALL_SOL_INVOKE_SIGNED_C)
+	SyscallID_SolInvokeSignedRust               = SyscallID(C.SEALEVEL_SYSCALL_SOL_INVOKE_SIGNED_RUST)
+	SyscallID_SolAllocFree                      = SyscallID(C.SEALEVEL_SYSCALL_SOL_ALLOC_FREE)
+	SyscallID_SolSetReturnData                  = SyscallID(C.SEALEVEL_SYSCALL_SOL_SET_RETURN_DATA)
+	SyscallID_SolGetReturnData                  = SyscallID(C.SEALEVEL_SYSCALL_SOL_GET_RETURN_DATA)
+	SyscallID_SolLogData                        = SyscallID(C.SEALEVEL_SYSCALL_SOL_LOG_DATA)
+	SyscallID_SolGetProcessedSiblingInstruction = SyscallID(C.SEALEVEL_SYSCALL_SOL_GET_PROCESSED_SIBLING_INSTRUCTION)
+	SyscallID_SolGetStackHeight                 = SyscallID(C.SEALEVEL_SYSCALL_SOL_GET_STACK_HEIGHT)
+)
+
 // SyscallRegistry wraps solana_rbpf::vm::SyscallRegistry.
 type SyscallRegistry struct {
 	inner C.sealevel_syscall_registry
@@ -104,40 +144,47 @@ func (s *SyscallRegistry) free() {
 	C.sealevel_syscall_registry_free(s.inner)
 }
 
-// Error maps to solana_rbpf::error::EbpfError.
-type Error struct {
-	Code    int
-	Message string
-}
+type ErrCode uint
 
 // Error codes (enum branches of solana_rbpf::error::EbpfError)
 const (
-	ErrUnknown                 = C.SEALEVEL_ERR_UNKNOWN
-	Ok                         = C.SEALEVEL_OK
-	ErrInvalidElf              = C.SEALEVEL_ERR_INVALID_ELF
-	ErrSyscallRegistration     = C.SEALEVEL_ERR_SYSCALL_REGISTRATION
-	ErrCallDepthExceeded       = C.SEALEVEL_ERR_CALL_DEPTH_EXCEEDED
-	ErrExitRootCallFrame       = C.SEALEVEL_ERR_EXIT_ROOT_CALL_FRAME
-	ErrDivideByZero            = C.SEALEVEL_ERR_DIVIDE_BY_ZERO
-	ErrDivideOverflow          = C.SEALEVEL_ERR_DIVIDE_OVERFLOW
-	ErrExecutionOverrun        = C.SEALEVEL_ERR_EXECUTION_OVERRUN
-	ErrCallOutsideTextSegment  = C.SEALEVEL_ERR_CALL_OUTSIDE_TEXT_SEGMENT
-	ErrExceededMaxInstructions = C.SEALEVEL_ERR_EXCEEDED_MAX_INSTRUCTIONS
-	ErrJitNotCompiled          = C.SEALEVEL_ERR_JIT_NOT_COMPILED
-	ErrInvalidVirtualAddress   = C.SEALEVEL_ERR_INVALID_VIRTUAL_ADDRESS
-	ErrInvalidMemoryRegion     = C.SEALEVEL_ERR_INVALID_MEMORY_REGION
-	ErrAccessViolation         = C.SEALEVEL_ERR_ACCESS_VIOLATION
-	ErrStackAccessViolation    = C.SEALEVEL_ERR_STACK_ACCESS_VIOLATION
-	ErrInvalidInstruction      = C.SEALEVEL_ERR_INVALID_INSTRUCTION
-	ErrUnsupportedInstruction  = C.SEALEVEL_ERR_UNSUPPORTED_INSTRUCTION
-	ErrErrExhaustedTextSegment = C.SEALEVEL_ERR_ERR_EXHAUSTED_TEXT_SEGMENT
-	ErrLibcInvocationFailed    = C.SEALEVEL_ERR_LIBC_INVOCATION_FAILED
-	ErrVerifierError           = C.SEALEVEL_ERR_VERIFIER_ERROR
+	ErrUnknown                 = ErrCode(C.SEALEVEL_ERR_UNKNOWN)
+	Ok                         = ErrCode(C.SEALEVEL_OK)
+	ErrInvalidElf              = ErrCode(C.SEALEVEL_ERR_INVALID_ELF)
+	ErrSyscallRegistration     = ErrCode(C.SEALEVEL_ERR_SYSCALL_REGISTRATION)
+	ErrCallDepthExceeded       = ErrCode(C.SEALEVEL_ERR_CALL_DEPTH_EXCEEDED)
+	ErrExitRootCallFrame       = ErrCode(C.SEALEVEL_ERR_EXIT_ROOT_CALL_FRAME)
+	ErrDivideByZero            = ErrCode(C.SEALEVEL_ERR_DIVIDE_BY_ZERO)
+	ErrDivideOverflow          = ErrCode(C.SEALEVEL_ERR_DIVIDE_OVERFLOW)
+	ErrExecutionOverrun        = ErrCode(C.SEALEVEL_ERR_EXECUTION_OVERRUN)
+	ErrCallOutsideTextSegment  = ErrCode(C.SEALEVEL_ERR_CALL_OUTSIDE_TEXT_SEGMENT)
+	ErrExceededMaxInstructions = ErrCode(C.SEALEVEL_ERR_EXCEEDED_MAX_INSTRUCTIONS)
+	ErrJitNotCompiled          = ErrCode(C.SEALEVEL_ERR_JIT_NOT_COMPILED)
+	ErrInvalidVirtualAddress   = ErrCode(C.SEALEVEL_ERR_INVALID_VIRTUAL_ADDRESS)
+	ErrInvalidMemoryRegion     = ErrCode(C.SEALEVEL_ERR_INVALID_MEMORY_REGION)
+	ErrAccessViolation         = ErrCode(C.SEALEVEL_ERR_ACCESS_VIOLATION)
+	ErrStackAccessViolation    = ErrCode(C.SEALEVEL_ERR_STACK_ACCESS_VIOLATION)
+	ErrInvalidInstruction      = ErrCode(C.SEALEVEL_ERR_INVALID_INSTRUCTION)
+	ErrUnsupportedInstruction  = ErrCode(C.SEALEVEL_ERR_UNSUPPORTED_INSTRUCTION)
+	ErrErrExhaustedTextSegment = ErrCode(C.SEALEVEL_ERR_ERR_EXHAUSTED_TEXT_SEGMENT)
+	ErrLibcInvocationFailed    = ErrCode(C.SEALEVEL_ERR_LIBC_INVOCATION_FAILED)
+	ErrVerifierError           = ErrCode(C.SEALEVEL_ERR_VERIFIER_ERROR)
 )
+
+// RegisterBuiltin registers a builtin Solana syscall with the registry.
+func (s *SyscallRegistry) RegisterBuiltin(id SyscallID) bool {
+	return C.sealevel_syscall_register_builtin(s.inner, id)
+}
+
+// Error maps to solana_rbpf::error::EbpfError.
+type Error struct {
+	Code    ErrCode
+	Message string
+}
 
 // Returns the current thread-local error.
 func currentError() error {
-	errno := int(C.sealevel_errno())
+	errno := ErrCode(C.sealevel_errno())
 	if errno == Ok {
 		return nil
 	}
