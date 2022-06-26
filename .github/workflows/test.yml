@@ -30,10 +30,7 @@ jobs:
           ldd /usr/local/lib/x86_64-linux-gnu/libsealevel.so
       - name: Test
         run: |
-          go test -c .
-          echo $LD_LIBRARY_PATH
-          ldd ./sealevel-go.test
-        env:
-          LD_LIBRARY_PATH: "${{GITHUB_WORKSPACE}}/dist"
+          export LD_LIBRARY_PATH="$(pwd)/dist"
+          go test ./... -v
       - name: Check Format
         run: '[ "$(gofmt -l ./ | wc -l)" -eq 0 ]'
