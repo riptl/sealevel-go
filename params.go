@@ -8,19 +8,21 @@ import (
 const ReallocSpace = 1024 * 10
 const ReallocAlign = 8
 
-type Account struct {
-	IsSigner     bool
-	IsWritable   bool
-	IsExecutable bool
-	Key          [32]byte
-	Owner        [32]byte
-	Lamports     uint64
-	Data         []byte
-	RentEpoch    uint64
+type AccountParam struct {
+	IsDuplicate    bool
+	DuplicateIndex uint8 // must not be 0xFF
+	IsSigner       bool
+	IsWritable     bool
+	IsExecutable   bool
+	Key            [32]byte
+	Owner          [32]byte
+	Lamports       uint64
+	Data           []byte
+	RentEpoch      uint64
 }
 
 type Params struct {
-	Accounts  []Account
+	Accounts  []AccountParam
 	Data      []byte
 	ProgramID [32]byte
 }
@@ -30,7 +32,10 @@ func (p *Params) Serialize(buf *bytes.Buffer) {
 
 	_ = binary.Write(buf, binary.LittleEndian, uint64(len(p.Accounts)))
 	for _, account := range p.Accounts {
-		// TODO support instruction account duplicates
+		if account.IsDuplicate {
+			_, _ = buf.Write([]byte{account.DuplicateIndex})
+			buf.Grow(7)
+		}
 		_ = binary.Write(buf, binary.LittleEndian, uint8(0xFF))
 		_ = binary.Write(buf, binary.LittleEndian, account.IsSigner)
 		_ = binary.Write(buf, binary.LittleEndian, account.IsWritable)
