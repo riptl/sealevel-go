@@ -29,7 +29,9 @@ jobs:
           sudo cp -v ./dist/sealevel.h /usr/local/include/
           ldd /usr/local/lib/x86_64-linux-gnu/libsealevel.so
       - name: Test
-        run: go test ./... -v
+        run: |
+          go test -c .
+          ldd ./sealevel-go.test
         env:
           LD_LIBRARY_PATH: "${GITHUB_WORKSPACE}/dist"
       - name: Check Format
