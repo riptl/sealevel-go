@@ -25,8 +25,9 @@ jobs:
       - name: Install libsealevel
         run: |
           sudo mkdir -p /usr/local/lib/x86_64-linux-gnu/
-          sudo cp -v ./dist/libsealevel.so /usr/local/lib/
+          sudo cp -v ./dist/libsealevel.so /usr/local/lib/x86_64-linux-gnu/
           sudo cp -v ./dist/sealevel.h /usr/local/include/
+          ldd /usr/local/lib/x86_64-linux-gnu/libsealevel.so
       - name: Test
         run: go test ./... -v
       - name: Check Format
