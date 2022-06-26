@@ -24,17 +24,28 @@ import (
 	"unsafe"
 )
 
+// used to hint to linter that copies are illegal ©
+type noCopy struct{}
+
 // Config wraps solana_rbpf::vm::Config.
-type Config *C.sealevel_config
+// Must not be copied after first use.
+type Config struct {
+	config *C.sealevel_config
+	noCopy
+}
+
+func (c *Config) free() {
+	C.sealevel_config_free(c.config)
+}
 
 // NewConfig creates a new config object based on the given options.
 //
 // Calls `sealevel_config_new` and sets it up using `sealevel_config_setopt`.
-func NewConfig(opts *ConfigOpts) Config {
+func NewConfig(opts *ConfigOpts) *Config {
 	config := C.sealevel_config_new()
-	runtime.SetFinalizer(config, func(config *C.sealevel_config) {
-		C.sealevel_config_free(config)
-	})
+	wrapper := new(Config)
+	wrapper.config = config
+	runtime.SetFinalizer(wrapper, (*Config).free)
 	if opts != nil {
 		C.sealevel_config_setopt(config, C.SEALEVEL_OPT_NO_VERIFY, bool2size(opts.NoVerify))
 		if opts.MaxCallDepth == 0 {
@@ -64,7 +75,7 @@ func NewConfig(opts *ConfigOpts) Config {
 		C.sealevel_config_setopt(config, C.SEALEVEL_OPT_STATIC_SYSCALLS, bool2size(opts.StaticSyscalls))
 		C.sealevel_config_setopt(config, C.SEALEVEL_OPT_ENABLE_ELF_VADDR, bool2size(opts.EnableELFVaddr))
 	}
-	return config
+	return wrapper
 }
 
 func bool2size(b bool) C.size_t {
@@ -83,7 +94,8 @@ type SyscallRegistry struct {
 // NewSyscallRegistry wraps `sealevel_syscall_registry_new`.
 func NewSyscallRegistry() *SyscallRegistry {
 	registry := C.sealevel_syscall_registry_new()
-	wrapper := &SyscallRegistry{inner: registry}
+	wrapper := new(SyscallRegistry)
+	wrapper.inner = registry
 	runtime.SetFinalizer(wrapper, (*SyscallRegistry).free)
 	return wrapper
 }
@@ -144,10 +156,19 @@ func (e Error) Error() string {
 type Executable struct {
 	program *C.sealevel_executable
 	used    bool
+	noCopy
 }
 
+/*
+func (e *Executable) free() {
+	if !e.used {
+		// TODO destroy program
+	}
+}
+*/
+
 // LoadProgram wraps `sealevel_load_program`.
-func LoadProgram(config Config, syscalls *SyscallRegistry, elf []byte) (*Executable, error) {
+func LoadProgram(config *Config, syscalls *SyscallRegistry, elf []byte) (*Executable, error) {
 	var elfPtr *C.char
 	if len(elf) > 0 {
 		// only borrowed, no copy needed … i think?
@@ -155,7 +176,7 @@ func LoadProgram(config Config, syscalls *SyscallRegistry, elf []byte) (*Executa
 	}
 
 	program := C.sealevel_load_program(
-		config,
+		config.config,
 		syscalls.inner,
 		elfPtr,
 		(C.size_t)(len(elf)),
@@ -163,15 +184,12 @@ func LoadProgram(config Config, syscalls *SyscallRegistry, elf []byte) (*Executa
 	if program == nil {
 		return nil, currentError()
 	}
-	exec := &Executable{
+	exec := new(Executable)
+	*exec = Executable{
 		program: program,
 		used:    false,
 	}
-	runtime.SetFinalizer(exec, func(exec *Executable) {
-		if !exec.used {
-			// TODO destroy program
-		}
-	})
+	//runtime.SetFinalizer(exec, (*Executable).free)
 	return exec, nil
 }
 
@@ -207,6 +225,7 @@ type VM struct {
 	vm       *C.sealevel_vm
 	heap     unsafe.Pointer
 	dataPtrs []unsafe.Pointer
+	noCopy
 }
 
 func (v *VM) free() {
