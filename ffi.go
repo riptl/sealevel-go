@@ -144,7 +144,7 @@ func (s *SyscallRegistry) free() {
 	C.sealevel_syscall_registry_free(s.inner)
 }
 
-type ErrCode uint
+type ErrCode int
 
 // Error codes (enum branches of solana_rbpf::error::EbpfError)
 const (
@@ -173,7 +173,7 @@ const (
 
 // RegisterBuiltin registers a builtin Solana syscall with the registry.
 func (s *SyscallRegistry) RegisterBuiltin(id SyscallID) bool {
-	return C.sealevel_syscall_register_builtin(s.inner, id)
+	return bool(C.sealevel_syscall_register_builtin(s.inner, (C.sealevel_syscall_id)(id)))
 }
 
 // Error maps to solana_rbpf::error::EbpfError.
