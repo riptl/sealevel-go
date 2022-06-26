@@ -45,10 +45,10 @@ func TestExecute_Simple(t *testing.T) {
 	_ = binary.Write(&buf, binary.LittleEndian, uint64(b))
 	vm, err := NewVM(program, nil, []Region{
 		{
-			Data:      buf.Bytes(),
-			VMAddr:    0x4_0000_0000,
-			VMGapSize: 0,
-			Writable:  false,
+			Data:       buf.Bytes(),
+			VMAddr:     0x4_0000_0000,
+			VMGapSize:  0,
+			IsWritable: false,
 		},
 	})
 	require.NoError(t, err, "failed to create VM")
