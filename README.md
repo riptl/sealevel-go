@@ -23,7 +23,7 @@ To run, you'll need to …
 ```shell
 # Check out the `libsealevel` branch of `Blockdaemon/solana-labs`
 cd solana
-git remote add blockdaemon https://github.com/Blockdaemon/solana/tree/libsealevel
+git remote add blockdaemon https://github.com/Blockdaemon/solana
 git fetch blockdaemon
 git checkout blockdaemon/libsealevel
 
