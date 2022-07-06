@@ -21,14 +21,12 @@ To run, you'll need to …
 - install headers and shared library to your path;
 
 ```shell
-# Check out the `libsealevel` branch of `Blockdaemon/solana-labs`
-cd solana
-git remote add blockdaemon https://github.com/Blockdaemon/solana
-git fetch blockdaemon
-git checkout blockdaemon/libsealevel
+# Check out `libsealevel`.
+git clone https://github.com/terorie/libsealevel
+cd libsealevel
 
 # Build libsealevel
-cargo build --package sealevel-ffi --release
+cargo build --release
 
 # Install header
 ln -s "$(pwd)/sealevel.h" /usr/local/include/sealevel.h
