@@ -1,7 +1,7 @@
 
 ## ARCHIVED
 
-This project has been moved to https://github.com/certusone/radiance/tree/main/pkg/sbf
+This project moved to https://github.com/certusone/radiance/tree/main/pkg/sbf
 
 -----
 
